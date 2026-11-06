@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>IA con Criterio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700;800&display=swap">
+<style>
+/* Layout: barra fija de navegación + 6 bandas de ancho completo (Inicio, Investigación, Artículo,
+   Presentación, Video, Transparencia). Cada banda cierra con un enlace "Siguiente" que las conecta. */
+:root{
+  --bg:#EEF6FF; --surface:#FFFFFF; --alt:#DDEBFB; --ink:#0B2038; --muted:#3F5570; --line:#C3D6EC;
+  --accent:#0B63E5; --accent-ink:#FFFFFF; --coral:#B3470A; --mint:#0F7A52;
+  --hero-bg:#0A1A2E; --hero-ink:#EAF6FF; --hero-muted:#9FB8D1; --hero-accent:#5CD6FF;
+  --f-display:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+  --radius:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#07111D; --surface:#0D1E33; --alt:#0A1727; --ink:#E6F2FF; --muted:#9DB4CC; --line:#1D3550;
+  --accent:#5CC8FF; --accent-ink:#06121F; --coral:#FFA45C; --mint:#4FE0A8;
+  --hero-bg:#050D17; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#07111D; --surface:#0D1E33; --alt:#0A1727; --ink:#E6F2FF; --muted:#9DB4CC; --line:#1D3550;
+  --accent:#5CC8FF; --accent-ink:#06121F; --coral:#FFA45C; --mint:#4FE0A8;
+  --hero-bg:#050D17; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-padding-top:76px}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.65 var(--f-body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:60;background:var(--surface)}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:3px;border-radius:6px}
+.wrap{max-width:1120px;margin:0 auto;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.08;text-wrap:balance;margin:0}
+p{margin:0}
+.label{font:500 12px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase}
+
+/* Navegación */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:var(--surface);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:12px;min-height:60px}
+.brand{font:800 19px/1 var(--f-display);color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand span{color:var(--accent)}
+.links{display:flex;gap:4px;margin-left:auto;overflow-x:auto;scrollbar-width:none;min-width:0}
+.links::-webkit-scrollbar{display:none}
+.links a{font:600 14px/1 var(--f-body);color:var(--muted);text-decoration:none;padding:11px 13px;border-radius:999px;white-space:nowrap}
+.links a:hover{color:var(--ink);background:var(--alt)}
+.links a[aria-current="true"]{background:var(--accent);color:var(--accent-ink)}
+.theme{flex:none;width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer;font-size:17px;line-height:1}
+.theme:hover{border-color:var(--accent)}
+
+/* Bandas */
+.band{padding-block:88px 0}
+.band.alt{background:var(--alt)}
+.band .wrap{display:flex;flex-direction:column;gap:40px}
+.head{display:flex;flex-direction:column;gap:14px;max-width:760px}
+.head .label{color:var(--accent)}
+.head h2{font-size:clamp(26px,3.6vw,42px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.head p{color:var(--muted);font-size:19px}
+.next{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:56px;padding-block:22px;border-top:1px solid var(--line);color:var(--muted);font-weight:500}
+.next a{display:inline-flex;align-items:center;gap:10px;font:700 16px/1 var(--f-display);color:var(--ink);text-decoration:none;padding:12px 18px;border-radius:999px;border:1.5px solid var(--ink)}
+.next a:hover{background:var(--ink);color:var(--bg)}
+
+/* Inicio */
+.hero{background-color:var(--hero-bg);background-image:linear-gradient(rgba(92,214,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(92,214,255,.07) 1px,transparent 1px);background-size:32px 32px;color:var(--hero-ink);padding-block:72px 0}
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:48px;align-items:center}
+.hero .label{color:var(--hero-accent)}
+.hero h1{font-size:clamp(32px,5vw,62px);font-weight:800;letter-spacing:-.04em;line-height:1.12;margin-block:18px 26px}
+.hero h1 em{font-style:normal;color:var(--hero-accent)}
+.ask{border-left:4px solid var(--hero-accent);padding:4px 0 4px 20px;font:500 clamp(19px,2.2vw,24px)/1.4 var(--f-display);max-width:34ch}
+.purpose{margin-top:28px;color:var(--hero-muted);max-width:56ch}
+.purpose b{color:var(--hero-ink)}
+.cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.btn{display:inline-flex;align-items:center;gap:8px;font:700 16px/1 var(--f-display);padding:15px 22px;border-radius:999px;text-decoration:none;border:1.5px solid var(--hero-ink);color:var(--hero-ink)}
+.btn.solid{background:var(--hero-accent);border-color:var(--hero-accent);color:#06121F}
+.btn:hover{filter:brightness(1.1)}
+.cover{margin:0;border-radius:12px;overflow:hidden;border:1px solid rgba(92,214,255,.4);box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.cover::before{content:"";display:block;height:34px;background-color:#12263D;background-image:radial-gradient(circle,#FF5F57 5px,transparent 5.5px),radial-gradient(circle,#FEBC2E 5px,transparent 5.5px),radial-gradient(circle,#28C840 5px,transparent 5.5px);background-repeat:no-repeat;background-size:14px 14px;background-position:14px 10px,34px 10px,54px 10px}
+.cover img{display:block;width:100%;aspect-ratio:1/1;object-fit:cover;object-position:50% 50%}
+.hero .next{border-color:rgba(255,255,255,.18);color:var(--hero-muted);margin-top:64px}
+.hero .next a{color:var(--hero-ink);border-color:var(--hero-ink)}
+.hero .next a:hover{background:var(--hero-ink);color:var(--hero-bg)}
+.hero .stats{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:0;color:var(--hero-muted);font-size:14px}
+
+/* Investigación */
+.finds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.find{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px;display:flex;flex-direction:column;gap:16px}
+.find .tag{align-self:flex-start;font:500 12px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;border-radius:6px;background:var(--alt);color:var(--accent)}
+.find:nth-child(2) .tag{color:var(--coral)}
+.find:nth-child(3) .tag{color:var(--mint)}
+.find h3{font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
+.find .own{border-top:1px dashed var(--line);padding-top:16px;color:var(--muted);font-size:16px}
+.find .own b{display:block;font:500 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--ink);margin-bottom:8px}
+.find .src{margin-top:auto;font:500 13px/1.4 var(--f-mono);color:var(--muted)}
+.cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:28px}
+.panel h3{font-size:18px;margin-bottom:12px;letter-spacing:-.02em}
+.panel ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px}
+.panel li::marker{color:var(--accent)}
+.biblio li{font-size:16px}
+
+/* Artículo */
+.article{display:grid;grid-template-columns:220px minmax(0,1fr);gap:56px;align-items:start}
+.toc{position:sticky;top:84px;display:flex;flex-direction:column;gap:2px;border-left:2px solid var(--line)}
+.toc a{padding:8px 14px;color:var(--muted);text-decoration:none;font-weight:600;font-size:15px;margin-left:-2px;border-left:2px solid transparent}
+.toc a:hover{color:var(--accent);border-color:var(--accent)}
+.prose{max-width:68ch;display:flex;flex-direction:column;gap:20px;font-size:18px;line-height:1.75}
+.prose h3{font-size:23px;font-weight:700;margin-top:20px;letter-spacing:-.02em}
+.prose h3:first-child{margin-top:0}
+.prose .lead{font:500 clamp(22px,2.6vw,27px)/1.4 var(--f-display);color:var(--ink)}
+.prose .call{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px 24px}
+.prose .call b{color:var(--accent)}
+.prose ol{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:16px;counter-reset:h}
+.prose ol li{counter-increment:h;display:grid;grid-template-columns:44px minmax(0,1fr);gap:14px}
+.prose ol li::before{content:counter(h);font:800 22px/44px var(--f-display);width:44px;height:44px;text-align:center;border-radius:50%;background:var(--accent);color:var(--accent-ink)}
+.solution{border:2px solid var(--accent);border-radius:var(--radius);padding:26px 28px;background:var(--surface)}
+
+/* Presentación */
+.deck{display:grid;grid-template-columns:minmax(0,1fr) 190px;gap:20px;align-items:start}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.stage img{display:block;width:100%;aspect-ratio:16/9;object-fit:contain;background:#fff}
+.ctrl{display:flex;align-items:center;gap:12px;padding:14px 16px;border-top:1px solid var(--line)}
+.ctrl .cap{flex:1;min-width:0;font-weight:600;font-size:15px}
+.ctrl .n{font:500 13px/1 var(--f-mono);color:var(--muted)}
+.ib{width:44px;height:44px;border-radius:50%;border:1.5px solid var(--ink);background:transparent;color:var(--ink);font-size:18px;cursor:pointer;flex:none}
+.ib:hover{background:var(--ink);color:var(--bg)}
+.thumbs{display:flex;flex-direction:column;gap:10px;padding:2px}
+.thumbs button{padding:0;border:2px solid var(--line);border-radius:8px;overflow:hidden;cursor:pointer;background:var(--surface);flex:none}
+.thumbs button[aria-current="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.thumbs img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.btn2{display:inline-flex;align-items:center;gap:8px;font:700 15px/1 var(--f-display);padding:13px 20px;border-radius:999px;text-decoration:none;background:var(--accent);color:var(--accent-ink)}
+.btn2:hover{filter:brightness(1.1)}
+.hint{color:var(--muted);font-size:15px}
+
+/* Video */
+.vid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:28px;align-items:start}
+.player{border-radius:var(--radius);overflow:hidden;background:#000;box-shadow:0 16px 40px rgba(18,22,58,.22)}
+.player video{display:block;width:100%;aspect-ratio:16/9;background:#000}
+.vnotes{display:flex;flex-direction:column;gap:16px}
+.vnotes dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:15px}
+.vnotes dt{font:500 12px/1.9 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.vnotes dd{margin:0;font-weight:600}
+
+/* Transparencia */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:720px;font-size:16px}
+th,td{text-align:left;padding:16px 18px;vertical-align:top;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+th{font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--alt)}
+td:first-child{font-weight:700;white-space:nowrap}
+.code{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.code pre{margin:12px 0 0;padding:16px;border-radius:10px;background:var(--bg);border:1px solid var(--line);overflow-x:auto;font:500 13.5px/1.6 var(--f-mono);color:var(--ink)}
+.code p{color:var(--muted);font-size:16px}
+.foot{padding-block:40px 56px;color:var(--muted);font-size:15px}
+.foot .wrap{flex-direction:row;flex-wrap:wrap;justify-content:space-between;gap:12px}
+
+@media (max-width:920px){
+  .hero .wrap{grid-template-columns:minmax(0,1fr)}
+  .cover{max-width:420px}
+  .finds,.cols,.code,.vid{grid-template-columns:minmax(0,1fr)}
+  .article{grid-template-columns:minmax(0,1fr);gap:28px}
+  .toc{position:static;flex-direction:row;flex-wrap:wrap;border-left:0;gap:8px}
+  .toc a{border:1px solid var(--line);border-radius:999px;margin:0;padding:8px 14px}
+  .deck{grid-template-columns:minmax(0,1fr)}
+  .thumbs{flex-direction:row;overflow-x:auto;overscroll-behavior-x:contain}
+  .thumbs button{width:128px}
+}
+@media (max-width:640px){
+  body{font-size:16.5px}
+  .band{padding-block:64px 0}
+  .brand{font-size:17px}
+  .nav .wrap{gap:8px}
+  .find,.panel{padding:22px}
+  .ctrl .cap{display:none}
+  .ctrl{justify-content:space-between}
+  .next{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#inicio"><span>&lt;/&gt;</span> IA con Criterio</a>
+    <nav class="links" aria-label="Secciones">
+      <a href="#inicio">Inicio</a>
+      <a href="#consensus">Punto de partida</a>
+      <a href="#investigacion">Investigación</a>
+      <a href="#articulo">Artículo</a>
+      <a href="#presentacion">Presentación</a>
+      <a href="#video">Video</a>
+      <a href="#transparencia">Transparencia</a>
+    </nav>
+    <button class="theme" id="theme" type="button" aria-label="Cambiar entre tema claro y oscuro" title="Cambiar tema">◐</button>
+  </div>
+</header>
+
+<main>
+<!-- INICIO -->
+<section class="band hero" id="inicio" aria-labelledby="t-inicio">
+  <div class="wrap">
+    <div>
+      <h1 id="t-inicio">Estrategias para reducir el uso excesivo de <em>IA</em> en jóvenes</h1>
+      <p class="ask">¿Cómo usar la IA como apoyo sin convertirla en sustituto del pensamiento, la conversación o la autonomía?</p>
+      <p class="purpose"><b>Propósito.</b> Entender por qué algunos jóvenes llegan a depender de la inteligencia artificial y proponer prácticas concretas para usarla como apoyo, no como reemplazo. Dirigido a estudiantes, familias, docentes y profesionales.</p>
+      <div class="cta">
+        <a class="btn solid" href="#investigacion">Ver los hallazgos →</a>
+        <a class="btn" href="#video">Ver el video</a>
+      </div>
+    </div>
+    <figure class="cover">
+      <img src="media/portada.jpg" alt="Ilustración de un joven escribiendo en un cuaderno frente a un monitor, portada de la presentación">
+    </figure>
+  </div>
+  <div class="wrap">
+    <div class="next"><span class="stats">Esta página reúne: investigación · artículo · presentación · video · transparencia</span><a href="#consensus">Siguiente: Punto de partida ↓</a></div>
+  </div>
+</section>
+
+<!-- PUNTO DE PARTIDA -->
+<section class="band alt" id="consensus" aria-labelledby="t-cons">
+  <div class="wrap">
+    <div class="head">
+      <p class="label">Punto de partida</p>
+      <h2 id="t-cons">Donde empezó la investigación</h2>
+      <p>El proyecto nació de una búsqueda en Consensus, un buscador de estudios científicos con IA. Allí está la investigación completa del tema.</p>
+    </div>
+    <div class="panel" style="max-width:760px">
+      <h3>Búsqueda: reducción del uso excesivo de IA en jóvenes</h3>
+      <p style="color:var(--muted);margin-bottom:20px">Los tres hallazgos de la siguiente sección salen de esta búsqueda. Ábrela para ver los estudios originales.</p>
+      <div class="actions">
+        <a class="btn2" href="https://consensus.app/search/reduccion-uso-excesivo-ia-jovenes/RmBmGzThQO6ZZDfICeIUmg/?utm_source=share&amp;utm_medium=clipboard" target="_blank" rel="noopener">Abrir la búsqueda en Consensus ↗</a>
+        <span class="hint">Se abre en una pestaña nueva.</span>
+      </div>
+    </div>
+    <div class="next"><span>Ahora, los tres hallazgos principales.</span><a href="#investigacion">Siguiente: Investigación ↓</a></div>
+  </div>
+</section>
+
+<!-- INVESTIGACIÓN -->
+<section class="band" id="investigacion" aria-labelledby="t-inv">
+  <div class="wrap">
+    <div class="head">
+      <p class="label">Investigación</p>
+      <h2 id="t-inv">Tres hallazgos sobre la dependencia de la IA</h2>
+      <p>Cada hallazgo resume lo que muestran los estudios y lo que entendí de ellos.</p>
+    </div>
+
+    <div class="finds">
+      <article class="find">
+        <span class="tag">Hallazgo 1</span>
+        <h3>El malestar previo predice la dependencia</h3>
+        <p>En estudios longitudinales de panel cruzado, la ansiedad y la depresión anticipan un aumento posterior de la dependencia a la IA, por motivaciones de escape y de afiliación social sustitutiva. La relación no funciona igual en sentido inverso.</p>
+        <p class="own"><b>En mis palabras</b>Usar la IA en exceso crea una dependencia difícil de abandonar. Usarla en cada tarea o proyecto se vuelve costumbre.</p>
+        <p class="src">Fuente: Huang et al., 2024</p>
+      </article>
+      <article class="find">
+        <span class="tag">Hallazgo 2</span>
+        <h3>Delegar todo debilita el pensamiento propio</h3>
+        <p>Pasar de forma sistemática las tareas complejas a la IA favorece la descarga cognitiva excesiva. Se asocia con menor autoeficacia, más pereza intelectual y menos pensamiento crítico y creativo.</p>
+        <p class="own"><b>En mis palabras</b>Si uso la IA durante mucho tiempo, pierdo la capacidad de comprender un problema y se reducen mis habilidades.</p>
+        <p class="src">Fuente: estudio base del Segundo entregable</p>
+      </article>
+      <article class="find">
+        <span class="tag">Hallazgo 3</span>
+        <h3>La alfabetización crítica sí ayuda</h3>
+        <p>La alfabetización digital, la crianza autoritativa, la inteligencia emocional y los programas de actividad física reducen la confianza ciega en la IA y mejoran la autorregulación.</p>
+        <p class="own"><b>En mis palabras</b>Usarla a menudo genera confianza ciega en ella. Aprender a cuestionarla es parte de la solución.</p>
+        <p class="src">Fuente: Lavanga et al., 2025</p>
+      </article>
+    </div>
+
+    <div class="cols">
+      <div class="panel">
+        <h3>El desafío en contexto</h3>
+        <ul>
+          <li>El uso de modelos generativos creció con rapidez entre adolescentes y universitarios, con tasas superiores al 60% en ciertas poblaciones.</li>
+          <li>La IA puede <b>resolver</b> lo que el joven debería practicar, <b>responder</b> cuando necesita hablar con alguien, <b>calmar</b> el malestar sin atender su causa y <b>desdibujar</b> los límites del tiempo de uso.</li>
+          <li>La adolescencia requiere acompañamiento de familias, docentes, plataformas y políticas públicas.</li>
+        </ul>
+      </div>
+      <div class="panel biblio">
+        <h3>Fuentes consultadas</h3>
+        <ul>
+          <li>American Psychological Association. <i>Artificial Intelligence and Adolescent Well-being: An APA Health Advisory.</i></li>
+          <li>Huang et al. (2024). Estudio longitudinal de panel cruzado sobre salud mental y dependencia a la IA.</li>
+          <li>Lavanga et al. (2025). Alfabetización digital, uso ético y habilidades metacognitivas.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="next"><span>Continúa con el texto completo del estudio.</span><a href="#articulo">Siguiente: Artículo ↓</a></div>
+  </div>
+</section>
+
+<!-- ARTÍCULO -->
+<section class="band alt" id="articulo" aria-labelledby="t-art">
+  <div class="wrap">
+    <div class="head">
+      <p class="label">Artículo</p>
+      <h2 id="t-art">Uso excesivo de la IA en jóvenes: una síntesis y una propuesta</h2>
+      <p>Texto completo del Segundo entregable.</p>
+    </div>
+
+    <div class="article">
+      <nav class="toc" aria-label="En este artículo">
+        <a href="#a-problema">Planteamiento</a>
+        <a href="#a-hallazgos">Hallazgos científicos</a>
+        <a href="#a-interpretacion">Mi interpretación</a>
+        <a href="#a-solucion">Solución propuesta</a>
+      </nav>
+
+      <article class="prose">
+        <h3 id="a-problema">Planteamiento del problema</h3>
+        <p class="lead">En el presente estudio se aborda la problemática del uso excesivo de la inteligencia artificial (IA) en jóvenes, para lo cual se han desarrollado estrategias encaminadas a su reducción.</p>
+        <p>Para abordar de manera integral cómo mitigar la dependencia tecnológica en la juventud, esta síntesis examina el planteamiento del problema, los hallazgos empíricos clave con su justificación metodológica, y las conclusiones provisionales sobre las intervenciones necesarias.</p>
+
+        <h3 id="a-hallazgos">Hallazgos científicos relevantes</h3>
+        <p>Los estudios recientes han identificado los factores psicológicos subyacentes a la dependencia, así como sus repercusiones en el aprendizaje y las estrategias iniciales para mitigar el uso problemático.</p>
+        <p>El malestar psicológico previo ha sido identificado como un factor predictivo de la dependencia. En estudios longitudinales de panel cruzado, se ha observado que los problemas de salud mental, tales como la ansiedad y la depresión, se relacionan con un aumento posterior de la dependencia a la IA. Este incremento se atribuye a motivaciones de escape y afiliación social sustitutiva, y no a la inversa.</p>
+        <p>En este sentido, se ha observado que la sobredependencia cognitiva y el deterioro del juicio autónomo están asociados a la delegación sistemática de tareas complejas en la IA. Esta práctica ha demostrado favorecer la descarga cognitiva excesiva, lo que se ha asociado empíricamente con una menor autoeficacia, un incremento de la pereza intelectual y una reducción de las habilidades esenciales de pensamiento crítico y creativo.</p>
+        <p>La presente investigación aborda la efectividad de la alfabetización crítica y las intervenciones conductuales. En este sentido, se han observado resultados preliminares significativos en cuanto a la reducción de la confianza ciega en la IA, particularmente en el contexto de las prácticas de crianza autoritativa y el fortalecimiento de la inteligencia emocional. Asimismo, se han registrado mejoras en la autorregulación, como consecuencia de la implementación de programas estructurados de actividad física y alfabetización digital.</p>
+
+        <h3 id="a-interpretacion">Cómo interpreto los hallazgos</h3>
+        <p>Como se desprende de los hallazgos, se infiere lo siguiente:</p>
+        <ol>
+          <li><p><b>Primer hallazgo.</b> El uso excesivo de la IA por parte de un adolescente o de un individuo genera una dependencia hacia esta herramienta que resulta difícil de abandonar. En otras palabras, la utilización de la IA en cualquier proyecto o tarea asignada se convierte en una práctica habitual para el individuo.</p></li>
+          <li><p><b>Segundo hallazgo.</b> Al usar la IA durante mucho tiempo, o si ya se venía utilizando anteriormente, se genera un deterioro del pensamiento crítico y creativo. Es decir, se pierde la capacidad de comprender y entender un problema, y por eso se reducen las habilidades.</p></li>
+          <li><p><b>Tercer hallazgo.</b> Practicar y utilizar la inteligencia artificial a menudo puede tener como causa la dependencia de ella, y por eso genera una confianza a ciegas. Es decir, se confía ciegamente en ella.</p></li>
+        </ol>
+
+        <h3 id="a-solucion">Solución propuesta</h3>
+        <div class="solution">
+          <p>Lo que sugiero para reducir este problema de dependencia a la inteligencia artificial es hacer prácticas solo, sin utilizar la IA: dejar el teléfono o cualquier otro dispositivo aparte del que se esté
